@@ -1,6 +1,7 @@
 const {response} = require('express');
 const bcrypt = require('bcryptjs');
 const Usuario = require('../models/usuario');
+const Song = require('../models/song');
 const { generarJWT } = require('../helpers/jwt');
 
 const crearUsuario = async (req, res = response) => {
@@ -95,6 +96,38 @@ const renewToken = async (req, res = response) => {
     })
 }
 
+const crearCancion = async (req, res = response) => {
+
+    const { title, artist } = req.body;
+
+    try {
+        const existeCancion = await Song.findOne({ title, artist });
+        if (existeCancion) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ya existe la canción'
+            });
+        }
+        const song = new Song(req.body);
+
+        await song.save();
+
+        res.json({
+            ok: true,
+            msg: 'Crear canción',
+            song
+        });
+
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        });
+    }
+}
 
 
-module.exports = { crearUsuario, login, renewToken }
+
+
+module.exports = { crearUsuario, login, renewToken, crearCancion }
